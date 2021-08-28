@@ -2,15 +2,16 @@ package task4.A.Entities;
 
 import java.sql.Date;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class Human extends Entity {
     private String fullName;
     private String country;
-    private Date date_birth;
+    private java.util.Date date_birth;
     private String mail;
     private String phone;
 
-    public Human(int id, String fullName, String country, Date date_birth, String mail, String phone) {
+    public Human(int id, String fullName, String country, java.util.Date date_birth, String mail, String phone) {
         super(id);
         this.fullName = fullName;
         this.country = country;
@@ -18,6 +19,8 @@ public class Human extends Entity {
         this.mail = mail;
         this.phone = phone;
     }
+
+
 
 
     public String getFullName() {
@@ -70,7 +73,7 @@ public class Human extends Entity {
                 Objects.equals(phone, human.phone);
     }
 
-    public Date getDate_birth() {
+    public java.util.Date getDate_birth() {
         return date_birth;
     }
 
@@ -80,7 +83,7 @@ public class Human extends Entity {
 
     @Override
     public String toString() {
-        return "Human {\n\tid = " + super.getId() +
+        return "Human { "+
                 "\n\tname = " + this.fullName +
                 "\n\tcountry = " + this.country +
                 "\n\tdate birth = " + this.date_birth +
@@ -93,4 +96,5 @@ public class Human extends Entity {
     public int hashCode() {
         return super.hashCode();
     }
+
 }

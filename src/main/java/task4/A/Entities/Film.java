@@ -31,11 +31,6 @@ public class Film extends Entity {
         super.setId(id);
     }
 
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-
     public String getTitle() {
         return title;
     }
@@ -62,6 +57,17 @@ public class Film extends Entity {
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return "Film{" +
+                "title='" + title + '\'' +
+                ", country='" + country + '\'' +
+                ", date_release=" + date_release +
+                ", description='" + description + '\'' +
+                ", producer=" +  +
+                '}';
     }
 
     public void setDescription(String description) {

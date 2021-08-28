@@ -8,14 +8,24 @@ import java.util.List;
 
 public class FilmsDAO extends DAO<Film> {
 
-
     public FilmsDAO(Connection connection) {
         super(connection);
     }
 
     @Override
+    public void create(Film film) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.CREATE.QUERY)) {
+            completion(preparedStatement, film);
+            int i = preparedStatement.executeUpdate();
+            film.setId(howManyRow());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public List getAll() throws SQLException {
-        return resultFilmsToList(connection.prepareStatement(SQLquery.READ.QUERY).executeQuery());
+        return resultFilmsToList(connection.prepareStatement(SQLqueries.READ.QUERY).executeQuery());
     }
 
     @Override
@@ -25,28 +35,27 @@ public class FilmsDAO extends DAO<Film> {
         return resultFilmsToList(resultSet).get(0);
     }
 
-    @Override
-    public void create(Film film) {
-
-    }
-
     public List getEntityByTitle(String title) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE title = " + title);
         ResultSet resultSet = preparedStatement.executeQuery();
         return resultFilmsToList(resultSet);
     }
 
-    public List getEntityByCountry(String country) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE country = " + country);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        return resultFilmsToList(resultSet);
+    public List<Film> getEntityByCountry(String country) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE country = (?)")) {
+            preparedStatement.setString(1,country);
+            return resultFilmsToList(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 //    public List getEntityByYear(Date date) throws SQLException {
 //        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE country = " + country);
 //        ResultSet resultSet = preparedStatement.executeQuery();
 //        return resultFilmsToList(resultSet);
-//    }
+//
 
 
     @Override
@@ -58,19 +67,36 @@ public class FilmsDAO extends DAO<Film> {
         }
     }
 
+
     @Override
     public void update(Film film) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(SQLquery.UPDATE.QUERY)) {
-            preparedStatement.setString(1, film.getTitle());
-            preparedStatement.setString(2, film.getCountry());
-            preparedStatement.setDate(3, (Date) film.getDate_release());
-            preparedStatement.setString(4, film.getDescription());
-            preparedStatement.setInt(5, film.getProducer());
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.UPDATE.QUERY)) {
+            completion(preparedStatement, film);
             preparedStatement.setInt(6, film.getId());
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+
+    private void completion(PreparedStatement preparedStatement, Film film) throws SQLException {
+        preparedStatement.setString(1, film.getTitle());
+        preparedStatement.setString(2, film.getCountry());
+        preparedStatement.setDate(3, new java.sql.Date(film.getDate_release().getTime()));
+        preparedStatement.setString(4, film.getDescription());
+        preparedStatement.setInt(5, film.getProducer());
+    }
+
+    public int howManyRow() {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM films")) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next())
+                return resultSet.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     private List<Film> resultFilmsToList(ResultSet resultSet) throws SQLException {
@@ -81,14 +107,16 @@ public class FilmsDAO extends DAO<Film> {
         return listFilms;
     }
 
-    private enum SQLquery {
+    private enum SQLqueries {
         CREATE("INSERT INFO films (id, title, country, date_release, description, producer) VALUES (DEFAULT, (?),(?),(?),(?),(?))"),
         READ("SELECT * FROM films"),
-        UPDATE("UPDATE films SET title = (?), country = (?), date_release = (?), description = (?), producer = (?) WHERE id = (?)");
+        UPDATE("UPDATE films SET title = (?), country = (?), date_release = (?), description = (?), producer = (?) WHERE id = (?)"),
+        DELETE("DELETE FROM films WHERE id = (?)");
         String QUERY;
 
-        SQLquery(String query) {
+        SQLqueries(String query) {
             this.QUERY = query;
         }
     }
 }
+
