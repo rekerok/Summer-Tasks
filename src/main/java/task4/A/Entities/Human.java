@@ -1,8 +1,13 @@
 package task4.A.Entities;
 
+import Variables.Variables;
+import task4.A.DAO.Connector;
+import task4.A.DAO.DAO;
+import task4.A.DAO.PeopleDAO;
+
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 public class Human extends Entity {
     private String fullName;
@@ -20,8 +25,14 @@ public class Human extends Entity {
         this.phone = phone;
     }
 
-
-
+    public Human(String fullName, String country, java.util.Date date_birth, String mail, String phone) throws SQLException {
+        super(DAO.lastId("people") + 1);
+        this.fullName = fullName;
+        this.country = country;
+        this.date_birth = date_birth;
+        this.mail = mail;
+        this.phone = phone;
+    }
 
     public String getFullName() {
         return fullName;
@@ -81,9 +92,14 @@ public class Human extends Entity {
         this.date_birth = date_birth;
     }
 
+    public static Human randomEntity() throws SQLException {
+        return new Human(Variables.faker.name().fullName(), Variables.faker.country().name(), Variables.faker.date().birthday(20, 100), Variables.faker.internet().emailAddress(), Variables.faker.phoneNumber().cellPhone());
+    }
+
     @Override
     public String toString() {
-        return "Human { "+
+        return "Human { " +
+                "\n\tid = " + +getId() +
                 "\n\tname = " + this.fullName +
                 "\n\tcountry = " + this.country +
                 "\n\tdate birth = " + this.date_birth +

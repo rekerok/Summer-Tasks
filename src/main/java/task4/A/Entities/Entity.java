@@ -1,9 +1,11 @@
 package task4.A.Entities;
 
-import java.io.Serializable;
+import task4.A.DAO.DAO;
+
+import java.sql.SQLException;
 
 public abstract class Entity {
-    private int id;
+    private int id = 0;
 
     public int getId() {
         return id;
@@ -29,4 +31,6 @@ public abstract class Entity {
     public String toString() {
         return super.toString();
     }
- }
+
+    // public abstract Entity randomEntity() throws SQLException;
+}

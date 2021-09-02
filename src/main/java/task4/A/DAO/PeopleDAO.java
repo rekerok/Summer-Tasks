@@ -1,5 +1,6 @@
 package task4.A.DAO;
 
+import task4.A.Entities.Film;
 import task4.A.Entities.Human;
 
 import java.sql.*;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PeopleDAO extends DAO<Human> {
+
 
     public PeopleDAO(Connection connection) {
         super(connection);
@@ -16,8 +18,8 @@ public class PeopleDAO extends DAO<Human> {
     public void create(Human human) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.CREATE.QUERY)) {
             completion(preparedStatement, human);
-            int i = preparedStatement.executeUpdate();
-            human.setId(howManyRow());
+            preparedStatement.executeUpdate();
+            human.setId(lastId("people"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -46,9 +48,21 @@ public class PeopleDAO extends DAO<Human> {
         return resultPeopleToList(resultSet).get(0);
     }
 
+    public static String getProducerById(int filmId) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT full_name FROM people WHERE id = " + filmId)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                return resultSet.getString(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<Human> getEntityByCountry(String country) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM people WHERE country = (?)")) {
-            preparedStatement.setString(1,country);
+            preparedStatement.setString(1, country);
             return resultPeopleToList(preparedStatement.executeQuery());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -75,6 +89,7 @@ public class PeopleDAO extends DAO<Human> {
         preparedStatement.setString(5, human.getPhone());
     }
 
+
     public int howManyRow() {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM people")) {
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -87,7 +102,7 @@ public class PeopleDAO extends DAO<Human> {
     }
 
     private List<Human> resultPeopleToList(ResultSet resultSet) throws SQLException {
-        ArrayList<Human> listHuman = new ArrayList<>();
+        List<Human> listHuman = new ArrayList<>();
         while (resultSet.next()) {
             listHuman.add(new Human(resultSet.getInt("id"), resultSet.getString("full_name"), resultSet.getString("country"), resultSet.getDate("date_birth"), resultSet.getString("mail"), resultSet.getString("phone")));
         }

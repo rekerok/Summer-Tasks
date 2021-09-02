@@ -1,5 +1,12 @@
 package task4.A.Entities;
 
+import Variables.Variables;
+import task4.A.DAO.Connector;
+import task4.A.DAO.DAO;
+import task4.A.DAO.FilmsDAO;
+import task4.A.DAO.PeopleDAO;
+
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.Objects;
 
@@ -11,13 +18,26 @@ public class Film extends Entity {
     private String description;
     private int producer;
 
-    public Film(int id, String title, String country, Date date_release, String description, int producer) {
+    public Film(int id, String title, String country, Date date_release, String description, int producer) throws SQLException {
         super(id);
         this.title = title;
         this.country = country;
         this.date_release = date_release;
         this.description = description;
         this.producer = producer;
+    }
+
+    public Film(String title, String country, Date date_release, String description, int producer) throws SQLException {
+        super(DAO.lastId("films") + 1);
+        this.title = title;
+        this.country = country;
+        this.date_release = date_release;
+        this.description = description;
+        this.producer = producer;
+    }
+
+    public Film() {
+        super(0);
     }
 
 
@@ -59,19 +79,29 @@ public class Film extends Entity {
         return description;
     }
 
+
+    public static Entity randomEntity() throws SQLException {
+        return new Film(Variables.faker.book().title(), Variables.faker.country().name(), Variables.faker.date().birthday(1, 100), Variables.faker.lorem().paragraph(), Variables.faker.number().numberBetween(1, DAO.lastId("people")));
+    }
+
     @Override
     public String toString() {
-        return "Film{" +
-                "title='" + title + '\'' +
-                ", country='" + country + '\'' +
-                ", date_release=" + date_release +
-                ", description='" + description + '\'' +
-                ", producer=" +  +
-                '}';
+        return "Human { " +
+                "\n\tid = " + +getId() +
+                "\n\tname = " + this.title +
+                "\n\tcountry = " + this.country +
+                "\n\tdate release = " + this.date_release +
+                "\n\tdescription = " + this.description +
+                "\n\tproducer = " + PeopleDAO.getProducerById(producer) +
+                "\n}";
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getProducerName() {
+        return PeopleDAO.getProducerById(producer);
     }
 
     public int getProducer() {
@@ -98,7 +128,7 @@ public class Film extends Entity {
                 Objects.equals(country, film.country) &&
                 Objects.equals(date_release, film.date_release) &&
                 Objects.equals(description, film.description) &&
-                Objects.equals(producer,film.producer);
+                Objects.equals(producer, film.producer);
     }
 
 }

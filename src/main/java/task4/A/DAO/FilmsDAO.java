@@ -16,8 +16,9 @@ public class FilmsDAO extends DAO<Film> {
     public void create(Film film) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.CREATE.QUERY)) {
             completion(preparedStatement, film);
-            int i = preparedStatement.executeUpdate();
-            film.setId(howManyRow());
+            int i;
+            i = preparedStatement.executeUpdate();
+            film.setId(lastId("films"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -43,7 +44,7 @@ public class FilmsDAO extends DAO<Film> {
 
     public List<Film> getEntityByCountry(String country) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE country = (?)")) {
-            preparedStatement.setString(1,country);
+            preparedStatement.setString(1, country);
             return resultFilmsToList(preparedStatement.executeQuery());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -67,7 +68,6 @@ public class FilmsDAO extends DAO<Film> {
         }
     }
 
-
     @Override
     public void update(Film film) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.UPDATE.QUERY)) {
@@ -78,7 +78,6 @@ public class FilmsDAO extends DAO<Film> {
             e.printStackTrace();
         }
     }
-
 
     private void completion(PreparedStatement preparedStatement, Film film) throws SQLException {
         preparedStatement.setString(1, film.getTitle());
@@ -100,7 +99,7 @@ public class FilmsDAO extends DAO<Film> {
     }
 
     private List<Film> resultFilmsToList(ResultSet resultSet) throws SQLException {
-        ArrayList<Film> listFilms = new ArrayList<>();
+        List<Film> listFilms = new ArrayList<>();
         while (resultSet.next()) {
             listFilms.add(new Film(resultSet.getInt("id"), resultSet.getString("title"), resultSet.getString("country"), resultSet.getDate("date_release"), resultSet.getString("description"), resultSet.getInt("producer")));
         }
@@ -108,7 +107,7 @@ public class FilmsDAO extends DAO<Film> {
     }
 
     private enum SQLqueries {
-        CREATE("INSERT INFO films (id, title, country, date_release, description, producer) VALUES (DEFAULT, (?),(?),(?),(?),(?))"),
+        CREATE("INSERT INTO films (id, title, country, date_release, description, producer) VALUES (DEFAULT, (?),(?),(?),(?),(?))"),
         READ("SELECT * FROM films"),
         UPDATE("UPDATE films SET title = (?), country = (?), date_release = (?), description = (?), producer = (?) WHERE id = (?)"),
         DELETE("DELETE FROM films WHERE id = (?)");
