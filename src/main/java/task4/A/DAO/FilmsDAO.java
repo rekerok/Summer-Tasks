@@ -8,7 +8,7 @@ import java.util.List;
 
 public class FilmsDAO extends DAO<Film> {
 
-    public FilmsDAO(Connection connection) {
+    public FilmsDAO(Connection connection) throws SQLException {
         super(connection);
     }
 
@@ -36,13 +36,13 @@ public class FilmsDAO extends DAO<Film> {
         return resultFilmsToList(resultSet).get(0);
     }
 
-    public List getEntityByTitle(String title) throws SQLException {
+    public static List getEntityByTitle(String title) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE title = " + title);
         ResultSet resultSet = preparedStatement.executeQuery();
         return resultFilmsToList(resultSet);
     }
 
-    public List<Film> getEntityByCountry(String country) {
+    public static List<Film> getEntityByCountry(String country) {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE country = (?)")) {
             preparedStatement.setString(1, country);
             return resultFilmsToList(preparedStatement.executeQuery());
@@ -52,12 +52,25 @@ public class FilmsDAO extends DAO<Film> {
         return null;
     }
 
-//    public List getEntityByYear(Date date) throws SQLException {
-//        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM films WHERE country = " + country);
-//        ResultSet resultSet = preparedStatement.executeQuery();
-//        return resultFilmsToList(resultSet);
-//
+    public static List getFilmByYear(int from, int to) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.SELECT_BETWEEN_DATE.QUERY)) {
+            preparedStatement.setInt(1, from);
+            preparedStatement.setInt(2, to);
+            return resultFilmsToList(preparedStatement.executeQuery());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
+    public static String getTitleById(int id) throws SQLException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT title FROM films")) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next())
+                return resultSet.getString(1);
+        }
+        return "";
+    }
 
     @Override
     public void delete(int id) {
@@ -87,7 +100,7 @@ public class FilmsDAO extends DAO<Film> {
         preparedStatement.setInt(5, film.getProducer());
     }
 
-    public int howManyRow() {
+    public static int howManyRow(){
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM films")) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next())
@@ -98,7 +111,7 @@ public class FilmsDAO extends DAO<Film> {
         return 0;
     }
 
-    private List<Film> resultFilmsToList(ResultSet resultSet) throws SQLException {
+    private static List<Film> resultFilmsToList(ResultSet resultSet) throws SQLException {
         List<Film> listFilms = new ArrayList<>();
         while (resultSet.next()) {
             listFilms.add(new Film(resultSet.getInt("id"), resultSet.getString("title"), resultSet.getString("country"), resultSet.getDate("date_release"), resultSet.getString("description"), resultSet.getInt("producer")));
@@ -109,6 +122,7 @@ public class FilmsDAO extends DAO<Film> {
     private enum SQLqueries {
         CREATE("INSERT INTO films (id, title, country, date_release, description, producer) VALUES (DEFAULT, (?),(?),(?),(?),(?))"),
         READ("SELECT * FROM films"),
+        SELECT_BETWEEN_DATE("SELECT * FROM films WHERE EXTRACT(YEAR FROM date_release) BETWEEN (?) AND (?)"),
         UPDATE("UPDATE films SET title = (?), country = (?), date_release = (?), description = (?), producer = (?) WHERE id = (?)"),
         DELETE("DELETE FROM films WHERE id = (?)");
         String QUERY;

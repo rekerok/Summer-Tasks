@@ -8,8 +8,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+
 public abstract class DAO<T extends Entity> {
     protected static Connection connection;
+
+    static {
+        try {
+            connection = Connector.connection();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     public DAO(Connection connection) {
         this.connection = connection;
