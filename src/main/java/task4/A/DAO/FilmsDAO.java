@@ -1,12 +1,16 @@
 package task4.A.DAO;
 
 import task4.A.Entities.Film;
+import task4.A.Entities.Human;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FilmsDAO extends DAO<Film> {
+    public FilmsDAO() throws SQLException {
+        super(Connector.connection());
+    }
 
     public FilmsDAO(Connection connection) throws SQLException {
         super(connection);
@@ -64,12 +68,27 @@ public class FilmsDAO extends DAO<Film> {
     }
 
     public static String getTitleById(int id) throws SQLException {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT title FROM films")) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT title FROM films WHERE id = (?)")) {
+            preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next())
                 return resultSet.getString(1);
         }
         return "";
+    }
+
+
+
+    public static java.util.Date getDateById(int id) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT date_release FROM films WHERE id = (?)")) {
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next())
+                return resultSet.getDate(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -100,7 +119,7 @@ public class FilmsDAO extends DAO<Film> {
         preparedStatement.setInt(5, film.getProducer());
     }
 
-    public static int howManyRow(){
+    public static int howManyRow() {
         try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT COUNT(*) FROM films")) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next())

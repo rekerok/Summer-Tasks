@@ -39,6 +39,17 @@ public abstract class DAO<T extends Entity> {
         return 0;
     }
 
+    public static int FirstId(String db) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT MIN(id) FROM " + db)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next())
+                return resultSet.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public abstract List<T> getAll() throws SQLException;
 
     public abstract T getEntityById(int id) throws SQLException;

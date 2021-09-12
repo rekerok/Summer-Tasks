@@ -2,6 +2,7 @@ package task4.A.DAO;
 
 import task4.A.Entities.Entity;
 import task4.A.Entities.Film_Actor;
+import task4.A.Entities.Human;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,9 +11,14 @@ import java.util.List;
 public class Film_ActorDAO extends DAO<Film_Actor> {
 
 
+    public Film_ActorDAO() throws SQLException {
+        super(Connector.connection());
+    }
+
     public Film_ActorDAO(Connection connection) {
         super(connection);
     }
+
 
     @Override
     public List<Film_Actor> getAll() throws SQLException {
@@ -27,6 +33,21 @@ public class Film_ActorDAO extends DAO<Film_Actor> {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public List<Human> actorOnFilm(int idFilm) {
+        List<Human> list = new ArrayList<>();
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT id_film, id_actor FROM film_actor WHERE id_film = (?)")) {
+            preparedStatement.setInt(1, idFilm);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(PeopleDAO.getHumanById(resultSet.getInt(2)));
+            }
+            return list;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @Override
@@ -55,7 +76,7 @@ public class Film_ActorDAO extends DAO<Film_Actor> {
     @Override
     public void create(Film_Actor entity) {
         try (PreparedStatement preparedStatement = connection.prepareStatement(SQLqueries.CREATE.QUERY)) {
-            preparedStatement.setInt(1, entity.getId_actor());
+            preparedStatement.setInt(1, entity.getId_film());
             preparedStatement.setInt(2, entity.getId_actor());
             preparedStatement.executeUpdate();
             entity.setId(DAO.lastId("film_actor"));
@@ -78,7 +99,7 @@ public class Film_ActorDAO extends DAO<Film_Actor> {
     }
 
     private enum SQLqueries {
-        CREATE("INSERT INTO people (id, id_film, id_actor) VALUES (DEFAULT, (?), (?))"),
+        CREATE("INSERT INTO film_actor (id, id_film, id_actor) VALUES (DEFAULT, (?), (?))"),
         READ("SELECT * FROM film_actor"),
         UPDATE("UPDATE film_actor SET id_film = (?), id_actor = (?) WHERE id_film = (?) AND id_actor = (?)"),
         DELETE("DELETE FROM film_actor WHERE id = (?)");

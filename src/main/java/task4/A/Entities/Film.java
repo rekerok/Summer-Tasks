@@ -14,7 +14,7 @@ public class Film extends Entity {
 
     private String title;
     private String country;
-    private Date date_release;
+    private java.util.Date date_release;
     private String description;
     private int producer;
 
@@ -92,7 +92,7 @@ public class Film extends Entity {
                 "\n\tcountry = " + this.country +
                 "\n\tdate release = " + this.date_release +
                 "\n\tdescription = " + this.description +
-                "\n\tproducer = " + PeopleDAO.getProducerById(producer) +
+                "\n\tproducer = " + PeopleDAO.getNameById(producer) +
                 "\n}";
     }
 
@@ -101,7 +101,7 @@ public class Film extends Entity {
     }
 
     public String getProducerName() {
-        return PeopleDAO.getProducerById(producer);
+        return PeopleDAO.getNameById(producer);
     }
 
     public int getProducer() {

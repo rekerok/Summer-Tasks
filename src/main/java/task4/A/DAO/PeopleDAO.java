@@ -9,6 +9,9 @@ import java.util.List;
 
 public class PeopleDAO extends DAO<Human> {
 
+    public PeopleDAO() throws SQLException {
+        super(Connector.connection());
+    }
 
     public PeopleDAO(Connection connection) {
         super(connection);
@@ -48,12 +51,30 @@ public class PeopleDAO extends DAO<Human> {
         return resultPeopleToList(resultSet).get(0);
     }
 
-    public static String getProducerById(int filmId) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT full_name FROM people WHERE id = " + filmId)) {
+    public static Human getHumanById(int id) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM people WHERE id = " + id);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        return resultPeopleToList(resultSet).get(0);
+    }
+
+    public static String getNameById(int id) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT full_name FROM people WHERE id = " + id)) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 return resultSet.getString(1);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static java.util.Date getDateById(int id) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT date_birth FROM people WHERE id = (?)")) {
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next())
+                return resultSet.getDate(1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -101,7 +122,9 @@ public class PeopleDAO extends DAO<Human> {
         return 0;
     }
 
-    private List<Human> resultPeopleToList(ResultSet resultSet) throws SQLException {
+
+
+    public static List<Human> resultPeopleToList(ResultSet resultSet) throws SQLException {
         List<Human> listHuman = new ArrayList<>();
         while (resultSet.next()) {
             listHuman.add(new Human(resultSet.getInt("id"), resultSet.getString("full_name"), resultSet.getString("country"), resultSet.getDate("date_birth"), resultSet.getString("mail"), resultSet.getString("phone")));
